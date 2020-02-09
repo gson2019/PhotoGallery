@@ -8,13 +8,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.bubble.photogallery.FlickrFetcher
 import com.example.bubble.photogallery.R
+import com.example.bubble.photogallery.model.GalleryItem
+import com.example.bubble.photogallery.viewmodel.PhotoGalleryViewModel
 import kotlinx.android.synthetic.main.fragment_photo_gallery.*
 
 class PhotoGalleryFragment : Fragment() {
-
+    private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -28,11 +31,11 @@ class PhotoGalleryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         photoRcv.layoutManager = GridLayoutManager(context, 2)
 
-        val flickrLiveData: LiveData<String> = FlickrFetcher().fetchContents()
+        photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
 
-        flickrLiveData.observe(this, Observer {
-                responseString ->
-            Log.d("PhotoGalleryFragment", "Response Received: $responseString")
+        photoGalleryViewModel.galleryItemLiveData.observe(viewLifecycleOwner, Observer {
+                galleryItems ->
+            Log.d("FLickrFetcher", "Observe gallery Data: $galleryItems")
         })
     }
 
