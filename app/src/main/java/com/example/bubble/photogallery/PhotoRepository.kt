@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
-class FlickrFetcher {
+class PhotoRepository {
     private val flickrApi : FlickrApi
     init {
         val retrofit: Retrofit = Retrofit.Builder()
