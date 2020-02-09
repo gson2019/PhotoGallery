@@ -33,7 +33,7 @@ class PhotoGalleryFragment : Fragment() {
 
         photoGalleryViewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
 
-        photoGalleryViewModel.galleryItemLiveData.observe(viewLifecycleOwner, Observer {
+        photoGalleryViewModel.galleryItems.observe(viewLifecycleOwner, Observer {
                 galleryItems ->
             photoRcv.adapter = PhotoAdapter(galleryItems)
             Log.d("FLickrFetcher", "Observe gallery Data: $galleryItems")

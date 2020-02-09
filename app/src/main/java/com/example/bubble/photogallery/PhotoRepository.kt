@@ -1,21 +1,16 @@
 package com.example.bubble.photogallery
 
-import android.util.Log
-import androidx.lifecycle.LiveData
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.example.bubble.photogallery.api.FlickrApi
-import com.example.bubble.photogallery.model.FlickrResponse
 import com.example.bubble.photogallery.model.GalleryItem
-import com.example.bubble.photogallery.model.PhotoResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class PhotoRepository {
     private val flickrApi : FlickrApi
+    val galleryItems = MutableLiveData<List<GalleryItem>>()
     init {
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://www.flickr.com/")
@@ -24,26 +19,15 @@ class PhotoRepository {
         flickrApi = retrofit.create(FlickrApi::class.java)
     }
 
-    fun fetchRemotePhotos() : LiveData<List<GalleryItem>>{
-        val responseLiveData:MutableLiveData<List<GalleryItem>> = MutableLiveData()
-        val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
-        Log.d("FlickrFetcher", "Fetching photos")
-        flickrRequest.enqueue(object: Callback<FlickrResponse> {
-            override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
-                Log.e("FlickrFetcher", "Failed to fetch photos", t)
-            }
+    @WorkerThread
+    suspend fun fetchRemotePhotos(){
+        val gItems = flickrApi.fetchPhotos().photos.galleryItems
+        galleryItems.postValue(gItems)
+    }
 
-            override fun onResponse(call: Call<FlickrResponse>, response: Response<FlickrResponse>) {
-                Log.d("FLickrFetcher", "Response Received")
-                val flickrResponse: FlickrResponse? = response.body()
-                val photoResponse: PhotoResponse? = flickrResponse?.photos
-                var galleryItems: List<GalleryItem> = photoResponse?.galleryItems?: mutableListOf()
-                galleryItems = galleryItems.filterNot{
-                    it.url.isBlank()
-                }
-                responseLiveData.value = galleryItems
-            }
-        })
-        return responseLiveData
+    fun refreshData(){
+        CoroutineScope(Dispatchers.IO).launch {
+            fetchRemotePhotos()
+        }
     }
 }

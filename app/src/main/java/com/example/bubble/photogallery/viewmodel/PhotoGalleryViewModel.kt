@@ -1,13 +1,19 @@
 package com.example.bubble.photogallery.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.bubble.photogallery.PhotoRepository
-import com.example.bubble.photogallery.model.GalleryItem
+import kotlinx.coroutines.launch
 
-class PhotoGalleryViewModel : ViewModel(){
-    val galleryItemLiveData:LiveData<List<GalleryItem>>
+class PhotoGalleryViewModel : ViewModel() {
+    private val photoRepository = PhotoRepository()
+    val galleryItems = photoRepository.galleryItems
     init {
-        galleryItemLiveData = PhotoRepository().fetchRemotePhotos()
+        refreshData()
+    }
+    private fun refreshData() {
+        viewModelScope.launch {
+            photoRepository.refreshData()
+        }
     }
 }
